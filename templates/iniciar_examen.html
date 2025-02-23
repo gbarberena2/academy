@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar Examen</title>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>Examen: {{ examen.tema }} ({{ examen.nivel }})</h1>
+    <p>Sistema: {{ examen.sistema }}</p>
+    <hr>
+    
+    {% for pregunta in preguntas %}
+      <div class="mb-3">
+        <p><strong>Pregunta {{ loop.index }}:</strong> {{ pregunta.pregunta }}</p>
+        
+        {% if examen.sistema == "multiple" %}
+          <!-- Mostrar opciones -->
+          <ul>
+            <li>{{ pregunta.opcion_correcta }}</li>
+            <li>{{ pregunta.opcion_incorrecta1 }}</li>
+            <li>{{ pregunta.opcion_incorrecta2 }}</li>
+            <li>{{ pregunta.opcion_incorrecta3 }}</li>
+          </ul>
+        {% else %}
+          <!-- Texto libre -->
+          <textarea class="form-control" rows="3" placeholder="Responde aquí..."></textarea>
+        {% endif %}
+      </div>
+    {% endfor %}
+    
+    <button class="btn btn-success">Enviar Respuestas</button>
+  </div>
+</body>
+</html>

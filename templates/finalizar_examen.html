@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultado del Examen</title>
+</head>
+<body>
+  <h1>Resultado - {{ examen.tema }} ({{ examen.nivel }})</h1>
+  <p>Respuestas correctas: {{ correctas }} de {{ total }}</p>
+  <p>Porcentaje: {{ porcentaje }}%</p>
+  
+  {% if aprobado %}
+    <h2 style="color: green;">¡Felicidades, aprobaste!</h2>
+  {% else %}
+    <h2 style="color: red;">No alcanzaste el 90%. ¡Sigue estudiando!</h2>
+  {% endif %}
+
+  <a href="{{ url_for('dashboard') }}">Regresar al Dashboard</a>
+  <a href="{{ url_for('historial_examen', examen_id=examen.id) }}" class="btn btn-primary">Ver Historial</a>
+
+</body>
+</html>

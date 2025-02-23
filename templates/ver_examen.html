@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resumen del Examen</title>
+  <!-- Bootstrap (opcional) -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  />
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>Resumen del Examen</h1>
+    <hr>
+    
+    <!-- Mostrar datos básicos del examen -->
+    <p><strong>Tema:</strong> {{ examen.tema }}</p>
+    <p><strong>Nivel:</strong> {{ examen.nivel }}</p>
+    <p><strong>Sistema:</strong> {{ examen.sistema }}</p>
+    
+    <!-- Opcional: mostrar cuántas preguntas se generaron -->
+    <p><strong>Preguntas generadas:</strong> {{ examen.detalles|length }}</p>
+
+    <hr>
+    <p>Ahora puedes iniciar el examen:</p>
+    
+    <!-- Botón para iniciar el examen, redirigiendo a "/iniciar_examen/<examen_id>" -->
+    <a 
+      href="{{ url_for('iniciar_examen', examen_id=examen.id) }}" 
+      class="btn btn-primary"
+    >
+      Iniciar Examen
+    </a>
+  </div>
+  
+  <!-- Bootstrap JS (opcional) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard | Quiz IA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Bootstrap 5 CSS -->
+  <link 
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  />
+  
+  <!-- Fuente (opcional) -->
+  <link
+    href="https://fonts.googleapis.com/css?family=Oswald:300"
+    rel="stylesheet"
+    type="text/css"
+  />
+
+  <style>
+    body {
+      font-family: 'Oswald', sans-serif;
+      background-color: #f8f9fa; /* color de fondo suave */
+      color: #413d3d;
+    }
+
+    /* Espacio entre cards */
+    .card-custom {
+      transition: transform 0.2s;
+    }
+    .card-custom:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    footer {
+      background-color: #343a40; /* Gris oscuro */
+      color: #fff;
+      text-align: center;
+      padding: 15px 0;
+      position: fixed; /* Fijo al fondo */
+      bottom: 0;
+      width: 100%;
+    }
+    
+    .navbar-brand {
+      font-weight: bold;
+    }
+
+    /* Ajuste de márgenes para que no tape el footer fijo */
+    .content-wrapper {
+      padding-bottom: 80px; /* espacio para que no tape el footer fijo */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand ms-3" href="#">Quiz IA</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto me-3">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('dashboard') }}">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Perfil</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <div class="container content-wrapper">
+    <div class="row mt-5">
+      <h1 class="text-center mb-4">Bienvenido a tu Dashboard</h1>
+      
+      <!-- Tarjeta 1: Estudiar -->
+      <div class="col-sm-6 col-md-3 mb-4">
+        <div class="card card-custom">
+          <div class="card-body text-center">
+            <h5 class="card-title">Estudiar</h5>
+            <p class="card-text">
+              Explora material y conceptos clave de IA.
+            </p>
+            <a href="#" class="btn btn-primary">Ir a Estudiar</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta 2: Practicar -->
+<div class="col-sm-6 col-md-3 mb-4">
+    <div class="card card-custom">
+      <div class="card-body text-center">
+        <h5 class="card-title">Practicar</h5>
+        <p class="card-text">
+          Ejercicios, ejemplos y prácticas guiadas.
+        </p>
+        <!-- Enlace directo a /practicar -->
+        <a href="/practicar" class="btn btn-warning">Ir a Practicar</a>
+        
+        <!-- O, usando url_for si la función se llama "index" y tiene @app.route("/practicar"):
+        <a href="{{ url_for('index') }}" class="btn btn-warning">Ir a Practicar</a>
+        -->
+      </div>
+    </div>
+  </div>
+  
+
+      <!-- Tarjeta de Examen -->
+<div class="col-sm-6 col-md-3 mb-4">
+    <div class="card card-custom">
+      <div class="card-body text-center">
+        <h5 class="card-title">Examen</h5>
+        <p class="card-text">
+          Pon a prueba tus conocimientos.
+        </p>
+        <a href="{{ url_for('preparar_examen') }}" class="btn btn-danger">
+          Configurar Examen
+        </a>
+      </div>
+    </div>
+  </div>
+  
+
+      <!-- Tarjeta 4: Base de Conocimiento -->
+      <div class="col-sm-6 col-md-3 mb-4">
+        <div class="card card-custom">
+          <div class="card-body text-center">
+            <h5 class="card-title">Base de Conocimiento</h5>
+            <p class="card-text">
+              Referencia rápida y FAQ de IA.
+            </p>
+            <a href="#" class="btn btn-success">Ver Base</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-5">
+      
+      
+      <!-- Tarjeta 1: Estudiar -->
+      <div class="col-sm-6 col-md-3 mb-4">
+        <div class="card card-custom">
+          <div class="card-body text-center">
+            <h5 class="card-title">Examen ML</h5>
+            <p class="card-text">
+              Examen especial de machine learning
+            </p>
+            <a href="/config_examen_ml" class="btn btn-warning">Generar Examen ML</a>
+          </div>
+        </div>
+      </div>
+
+<!-- Tarjeta 1: Estudiar -->
+<div class="col-sm-6 col-md-3 mb-4">
+  <div class="card card-custom">
+    <div class="card-body text-center">
+      <h5 class="card-title">Ver preguntas</h5>
+      <p class="card-text">
+        Ver preguntas contestadas
+      </p>
+      <a href="/show_questions" class="btn btn-warning">Ver preguntas</a>
+    </div>
+  </div>
+</div>
+
+
+      
+    
+
+  </div>
+  
+  <a href="{{ url_for('ver_examenes') }}" class="btn btn-success">📄 Ver Exámenes Realizados</a>
+  <a href="{{ url_for('graficar_examenes') }}" class="btn btn-success">📄 Ver Grafico</a>
+  <a href="{{ url_for('ver_graph_ml') }}" class="btn btn-success">📄 Ver Grafico Ml</a>
+  <a href="{{ url_for('show_questions') }}" class="btn btn-success">📄 Mostrar preguntas resueltas</a>
+
+  <!-- Footer fijo -->
+  <footer>
+    <p class="mb-0">© 2025 Quiz IA - Todos los derechos reservados</p>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
+</body>
+</html>

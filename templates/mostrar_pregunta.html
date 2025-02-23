@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Examen: {{ examen.tema }} ({{ examen.nivel }})</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Bootstrap 5 CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  />
+
+  <!-- Google Font: Oswald -->
+  <link
+    href="https://fonts.googleapis.com/css?family=Oswald:300"
+    rel="stylesheet"
+    type="text/css"
+  />
+
+  <!-- MathJax (para renderizar LaTeX) -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script
+    id="MathJax-script"
+    async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  ></script>
+
+  <style>
+    body {
+      font-family: "Oswald", sans-serif;
+      background-color: #f8f9fa;
+      color: #413D3D;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    /* Navbar */
+    .navbar-brand {
+      font-weight: 600;
+    }
+    /* Contenedor principal */
+    .quiz-container {
+      margin: 30px auto;
+      max-width: 900px;
+      padding: 0 15px;
+    }
+    h1 {
+      margin-top: 20px;
+      font-size: 2rem;
+    }
+    h3 {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    /* Pregunta un poco más grande */
+    .question-text {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    /* Estilos de las opciones */
+    .option-btn {
+      display: block;
+      width: 100%;
+      max-width: 600px;
+      margin: 12px auto;
+      padding: 12px 20px;
+      font-size: 18px;
+      background-color: #5b6b6b;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      text-align: center;
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+    }
+    .option-btn:hover {
+      background-color: #495959;
+    }
+    /* Opción seleccionada */
+    .option-btn.selected {
+      background-color: #f39c12 !important;
+      border: 2px solid #e67e22;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    }
+    /* Botón "Siguiente" */
+    .btn-next {
+      background-color: #3498db;
+      color: #fff;
+      border-radius: 30px;
+      border: none;
+      padding: 12px 30px;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+    .btn-next:hover {
+      background-color: #2e86c1;
+    }
+    .btn-next:active {
+      background-color: #2874a6;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand ms-3" href="#">Quiz IA</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto me-3">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Perfil</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="/logout">Cerrar Sesión</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <div class="quiz-container">
+    <h1>Examen: {{ examen.tema }} ({{ examen.nivel }})</h1>
+    <h3>Pregunta {{ idx + 1 }} de {{ total }}</h3>
+
+    <!-- Formulario para enviar respuesta -->
+    <form method="POST">
+      <!-- Mostramos la pregunta con MathJax, usando la clase question-text -->
+      <p class="question-text">{{ pregunta.pregunta|safe }}</p>
+
+      {% if examen.sistema == "multiple" %}
+        <!-- Opciones múltiples -->
+        <div>
+          {% for opcion in all_options %}
+            <button type="button"
+                    class="option-btn"
+                    onclick="seleccionarOpcion(this)"
+                    data-value="{{ opcion }}">
+              {{ opcion|safe }}
+            </button>
+          {% endfor %}
+        </div>
+        <!-- Campo oculto para almacenar la opción seleccionada -->
+        <input type="hidden" name="opcion" id="opcionSeleccionada" />
+      {% else %}
+        <!-- Para respuestas de texto libre -->
+        <textarea name="opcion" rows="3" class="form-control mt-3" placeholder="Tu respuesta"></textarea>
+      {% endif %}
+
+      <button type="submit" class="btn-next">Siguiente</button>
+    </form>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function seleccionarOpcion(boton) {
+      document.querySelectorAll(".option-btn").forEach(btn => {
+        btn.classList.remove("selected");
+      });
+      boton.classList.add("selected");
+      document.getElementById("opcionSeleccionada").value = boton.getAttribute("data-value");
+    }
+  </script>
+</body>
+</html>

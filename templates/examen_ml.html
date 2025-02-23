@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen ML</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-4">
+    <h1>Examen de Machine Learning</h1>
+    <p><strong>ID de Configuración:</strong> {{ config.id }}</p>
+    <p><strong>Nivel:</strong> {{ config.nivel }}</p>
+    <p><strong>Número de preguntas:</strong> {{ config.num_preguntas }}</p>
+    <hr>
+    <!-- Botón para procesar el examen -->
+    <form method="POST" action="{{ url_for('procesar_examen2', config_id=config.id) }}">
+      <button type="submit" class="btn btn-success">Procesar Examen</button>
+    </form>
+  </div>
+</body>
+</html>

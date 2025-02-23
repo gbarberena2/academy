@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de IA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .quiz-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn-option {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+        #resultado {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menú de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Quiz IA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Perfil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="/logout">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido del quiz -->
+    <div class="container">
+        <div class="quiz-container p-4">
+            <h2 class="text-center">Quiz de Inteligencia Artificial</h2>
+            <hr>
+            <p class="fs-5"><strong>Pregunta:</strong> {{ pregunta }}</p>
+            
+            <div id="opciones">
+                {% for opcion in opciones %}
+                    <button class="btn btn-outline-primary btn-option" onclick="seleccionarRespuesta(this)" data-value="{{ opcion }}">{{ opcion }}</button>
+                {% endfor %}
+            </div>
+
+            <!-- Guardamos las opciones generadas por OpenAI para almacenarlas en la BD -->
+            <input type="hidden" id="pregunta_id" value="{{ pregunta_id }}">
+            <input type="hidden" id="opcion_correcta" value="{{ correcta }}">
+            <input type="hidden" id="opcion_incorrecta1" value="{{ opciones[1] }}">
+            <input type="hidden" id="opcion_incorrecta2" value="{{ opciones[2] }}">
+            <input type="hidden" id="opcion_incorrecta3" value="{{ opciones[3] }}">
+
+            <div class="text-center mt-3">
+                <button class="btn btn-success" onclick="evaluarRespuesta()">Evaluar</button>
+            </div>
+
+            <p id="resultado" class="text-center mt-3"></p>
+        </div>
+    </div>
+
+    <script>
+        let seleccionUsuario = null;
+
+        function seleccionarRespuesta(boton) {
+            document.querySelectorAll(".btn-option").forEach(btn => btn.classList.remove("btn-primary"));
+            boton.classList.add("btn-primary");
+            seleccionUsuario = boton.getAttribute("data-value");
+        }
+
+        function evaluarRespuesta() {
+            if (!seleccionUsuario) {
+                alert("Por favor, selecciona una opción.");
+                return;
+            }
+
+            let preguntaId = document.getElementById("pregunta_id").value;
+            let opcionCorrecta = document.getElementById("opcion_correcta").value;
+            let opcionIncorrecta1 = document.getElementById("opcion_incorrecta1").value;
+            let opcionIncorrecta2 = document.getElementById("opcion_incorrecta2").value;
+            let opcionIncorrecta3 = document.getElementById("opcion_incorrecta3").value;
+
+            fetch("/evaluar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    respuesta: seleccionUsuario,
+                    correcta: opcionCorrecta,
+                    pregunta_id: preguntaId,
+                    opcion_correcta: opcionCorrecta,
+                    opcion_incorrecta1: opcionIncorrecta1,
+                    opcion_incorrecta2: opcionIncorrecta2,
+                    opcion_incorrecta3: opcionIncorrecta3
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultadoDiv = document.getElementById("resultado");
+                resultadoDiv.innerText = data.resultado;
+                resultadoDiv.className = data.resultado.includes("Correcto") ? "text-success" : "text-danger";
+            });
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

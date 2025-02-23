@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial del Examen</title>
+</head>
+<body>
+    <h1>Historial del Examen: {{ examen.tema }} ({{ examen.nivel }})</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Pregunta</th>
+                <th>Respuesta Usuario</th>
+                <th>Respuesta Correcta</th>
+                <th>Resultado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in historial %}
+            <tr>
+                <td>{{ h.pregunta }}</td>
+                <td>{{ h.respuesta_usuario }}</td>
+                <td>{{ h.respuesta_correcta }}</td>
+                <td>
+                    {% if h.es_correcta %}
+                        ✅ Correcta
+                    {% else %}
+                        ❌ Incorrecta
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('dashboard') }}">Volver al Dashboard</a>
+</body>
+</html>
