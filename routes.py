@@ -102,6 +102,16 @@ def obtener_respuesta_gpt_ml(consulta):
 
 
 
+@app.route("/ver_total_examenes")
+@login_required
+def ver_total_examenes():
+    # Consulta todos los exámenes y los ordena por fecha de creación (descendente)
+    examenes = Examen.query.order_by(Examen.fecha_creacion.desc()).all()
+    return render_template("ver_total_examenes.html", examenes=examenes)
+
+
+
+
 @app.route("/guardar_nota", methods=["POST"])
 @login_required
 def guardar_nota():

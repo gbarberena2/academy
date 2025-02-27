@@ -35,27 +35,21 @@
     .header-section {
       text-align: center;
       padding: 40px 0;
-      /* Opción: poner un fondo semitransparente
-         background: rgba(0,0,0,0.3); 
-         display: inline-block; 
-         border-radius: 10px; 
-         Añade un contenedor más pequeño, si quieres un recuadro. 
-      */
     }
     .header-section h1 {
       font-size: 3rem;
       margin-bottom: 10px;
       font-weight: 700;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.7); /* Sombra para destacar el texto */
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
     }
     .header-section p {
       font-size: 1.2rem;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.7); /* Sombra para subtítulo */
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
     }
 
     /* Contenedor de Login */
     .login-container {
-      background: rgba(255, 255, 255, 0.95); /* Fondo blanco semi-transparente */
+      background: rgba(255, 255, 255, 0.95);
       padding: 40px;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -124,13 +118,12 @@
 
   <!-- Video de fondo -->
   <video autoplay muted loop id="bgVideo">
-    <!-- URL pública del video "Big Buck Bunny" -->
-    <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+    <source src="{{ url_for('static', filename='videos/video03.mp4') }}" type="video/mp4">
     Tu navegador no soporta videos en HTML5.
   </video>
 
   <!-- Badge de versión -->
-  <div class="version-badge">v.01.0000 rc</div>
+  <div class="version-badge">v.01.0001 rc</div>
 
   <!-- Sección tipo "hero" -->
   <div class="header-section">

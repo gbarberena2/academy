@@ -170,10 +170,10 @@ class Examen(db.Model):
     sistema = db.Column(db.String(50), nullable=False)
     fecha_realizacion = db.Column(db.DateTime, nullable=True)
     resultado = db.Column(db.Float, nullable=True)
+    # Nueva columna para almacenar la fecha de creación
+    fecha_creacion = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    # Definimos las relaciones AQUÍ:
-    # 1) "detalles" para las preguntas generadas
-    # 2) "historial" para el registro del usuario (HistorialExamen)
+    # Relaciones existentes:
     detalles = db.relationship("DetalleExamen", backref="examen", lazy=True)
     historial = db.relationship("HistorialExamen", backref="examen", lazy=True)
 

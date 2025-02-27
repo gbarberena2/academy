@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ver Exámenes Totales | Quiz IA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  >
+</head>
+<body>
+  <!-- Navbar (reutiliza el que usas) -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand ms-3" href="{{ url_for('dashboard') }}">Quiz IA</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarNav" aria-controls="navbarNav" 
+              aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto me-3">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('dashboard') }}">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Perfil</a>
+          </li>
+          <!-- Menú "Ver Exámenes" -->
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('ver_total_examenes') }}">Ver Exámenes</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <div class="container mt-5">
+    <h1 class="mb-4">Listado de Exámenes Totales</h1>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tema</th>
+          <th>Nivel</th>
+          <th>Sistema</th>
+          <th>Fecha de Creación</th>
+          <th>Fecha de Realización</th>
+          <th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for examen in examenes %}
+        <tr>
+          <td>{{ examen.id }}</td>
+          <td>{{ examen.tema }}</td>
+          <td>{{ examen.nivel }}</td>
+          <td>{{ examen.sistema }}</td>
+          <td>
+            {% if examen.fecha_creacion %}
+              {{ examen.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if examen.fecha_realizacion %}
+              {{ examen.fecha_realizacion.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>{{ examen.resultado if examen.resultado is not none else '-' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center">No hay exámenes registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Volver al Dashboard</a>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
