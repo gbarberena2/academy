@@ -18,8 +18,20 @@
     type="text/css"
   />
 
-  <!-- MathJax (para renderizar LaTeX) -->
+  <!-- Polyfill (opcional, por compatibilidad con navegadores antiguos) -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+  <!-- Configuración de MathJax para reconocer $...$ y \(...\) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$','$$'], ['\\[','\\]']]
+      }
+    };
+  </script>
+
+  <!-- Carga de MathJax 3 (para renderizar LaTeX) -->
   <script
     id="MathJax-script"
     async
