@@ -2,7 +2,9 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 import random
 from openai import OpenAI
 from flask_login import login_user, logout_user, login_required, current_user
-from config_db import app, db, bcrypt, Usuario, Pregunta, Respuesta,Examen,DetalleExamen,HistorialExamen,ConfigExamenML,DetalleExamenRespuesta,ResumenExamenResultados,Nota
+from config_db import app, db, bcrypt, Usuario, Pregunta, Respuesta,Examen,DetalleExamen,HistorialExamen,ConfigExamenML,DetalleExamenRespuesta,ResumenExamenResultados,Nota,EstadoExamen
+
+
 
 
 from datetime import datetime  # <-- Agrega esta línea
@@ -262,64 +264,107 @@ from flask import session, redirect, url_for, flash, render_template
 @app.route("/iniciar_examen_ml/<int:config_id>")
 @login_required
 def iniciar_examen_ml(config_id):
-    """
-    Este endpoint inicializa la sesión para mostrar las preguntas
-    de la tabla 'detalle_examen_respuesta' asociadas a config_id.
-    Luego redirige a la primera pregunta (idx=0).
-    """
-    # 1. Obtener todos los registros en DetalleExamenRespuesta para este config_id
-    detalles = DetalleExamenRespuesta.query.filter_by(config_id=config_id).all()
+    config = ConfigExamenML.query.get_or_404(config_id)
     
+    # Asegúrate de que config.examen_id no sea None
+    if not config.examen_id:
+        flash("No se encontró examen asociado a esta configuración.", "danger")
+        return redirect(url_for("dashboard"))
+
+    examen_id = config.examen_id  # El ID real del examen en la tabla `examenes`
+    
+    # Obtener los detalles de la configuración
+    detalles = DetalleExamenRespuesta.query.filter_by(config_id=config_id).all()
     if not detalles:
         flash("No hay preguntas procesadas para este examen.", "danger")
         return redirect(url_for("ver_detalle_examen_respuesta", config_id=config_id))
+    
+    # Buscar si ya existe un estado en progreso para este usuario y examen
+    estado = EstadoExamen.query.filter_by(
+        usuario_id=current_user.id,
+        examen_id=examen_id,
+        status="in_progress"
+    ).first()
+    
+    if not estado:
+        # Crear un nuevo estado
+        estado = EstadoExamen(
+            usuario_id=current_user.id,
+            examen_id=examen_id,  # OJO: aquí va el examen_id real
+            current_index=0,
+            answers={}
+        )
+        db.session.add(estado)
+        db.session.commit()
+        print(f"DEBUG: Nuevo estado creado con id: {estado.id}, examen_id={examen_id}")
+    else:
+        print(f"DEBUG: Estado existente con id: {estado.id}, examen_id={examen_id}")
 
-    # 2. Guardar en la sesión la lista de IDs de detalle_examen_respuesta
-    #    y reiniciar el índice actual.
-    session["ml_exam_progress"] = {
-        "config_id": config_id,
-        "detalle_ids": [d.id for d in detalles],
-        "current_index": 0,
-        "answers": {}  # Aquí se guardarán las respuestas del usuario
-    }
+    # Redirigir a la primera pregunta (índice guardado en el estado)
+    return redirect(url_for("mostrar_pregunta_ml", config_id=config_id, idx=estado.current_index))
 
-    # 3. Redirigir a la primera pregunta (idx=0)
-    return redirect(url_for("mostrar_pregunta_ml", config_id=config_id, idx=0))
 
 
 
 @app.route("/iniciar_examen_ml/<int:config_id>/pregunta/<int:idx>", methods=["GET", "POST"])
 @login_required
 def mostrar_pregunta_ml(config_id, idx):
-    exam_progress = session.get("ml_exam_progress")
-    if not exam_progress or exam_progress.get("config_id") != config_id:
+    config = ConfigExamenML.query.get_or_404(config_id)
+    if not config.examen_id:
+        flash("No se encontró examen asociado a esta configuración.", "danger")
+        return redirect(url_for("dashboard"))
+
+    examen_id = config.examen_id
+    print(f"DEBUG: mostrar_pregunta_ml => config_id={config_id}, examen_id={examen_id}")
+
+    estado = EstadoExamen.query.filter_by(
+        usuario_id=current_user.id,
+        examen_id=examen_id,
+        status="in_progress"
+    ).first()
+    print("DEBUG: Estado obtenido:", estado)
+
+    if not estado:
         flash("No has iniciado este examen o ya fue finalizado.", "warning")
         return redirect(url_for("ver_detalle_examen_respuesta", config_id=config_id))
 
-    detalle_ids = exam_progress["detalle_ids"]
-    if idx < 0 or idx >= len(detalle_ids):
+    # Cargar todas las preguntas para este config
+    detalles = DetalleExamenRespuesta.query.filter_by(config_id=config_id).all()
+    print(f"DEBUG: Total de preguntas cargadas: {len(detalles)}")
+    if idx < 0 or idx >= len(detalles):
         flash("Índice de pregunta inválido.", "danger")
         return redirect(url_for("ver_detalle_examen_respuesta", config_id=config_id))
 
-    detalle_id = detalle_ids[idx]
+    detalle_id = detalles[idx].id
     pregunta_actual = DetalleExamenRespuesta.query.get_or_404(detalle_id)
 
-    # Cargar la "pregunta base" de la tabla 'preguntas'
-    pregunta_base = Pregunta.query.get_or_404(pregunta_actual.pregunta_id)
-    no_pregunta = pregunta_base.no_pregunta if pregunta_base else "N/A"
-    pagina = pregunta_base.pagina if pregunta_base else "N/A"
+    # Obtener la "pregunta base" (información extra, ej. número, página, etc.)
+    pregunta_base = Pregunta.query.get(pregunta_actual.pregunta_id)
 
     if request.method == "POST":
         respuesta_usuario = request.form.get("opcion")
-        exam_progress["answers"][str(detalle_id)] = respuesta_usuario
-        session["ml_exam_progress"] = exam_progress
+        print("DEBUG: respuesta_usuario recibida =", respuesta_usuario)
+        if not respuesta_usuario or respuesta_usuario.strip() == "":
+            flash("No seleccionaste ninguna opción.", "warning")
+            return redirect(url_for("mostrar_pregunta_ml", config_id=config_id, idx=idx))
+        
+        # Guardamos la respuesta en el diccionario de estado usando el id del detalle
+        estado.answers[str(detalle_id)] = respuesta_usuario
+        print("DEBUG: Diccionario answers actualizado =", estado.answers)
+        
+        # Actualizamos el índice de la siguiente pregunta
+        estado.current_index = idx + 1
+        db.session.commit()
+        print("DEBUG: Estado guardado en BD:", estado.answers)
 
-        next_idx = idx + 1
-        if next_idx < len(detalle_ids):
-            return redirect(url_for("mostrar_pregunta_ml", config_id=config_id, idx=next_idx))
+        if estado.current_index < len(detalles):
+            print("DEBUG: Redirigiendo a la pregunta con idx =", estado.current_index)
+            return redirect(url_for("mostrar_pregunta_ml", config_id=config_id, idx=estado.current_index))
         else:
+            print("DEBUG: Se contestaron todas las preguntas. Redirigiendo a finalizar_examen_ml.")
             return redirect(url_for("finalizar_examen_ml", config_id=config_id))
 
+    # Para GET: se mezclan las opciones antes de mostrar la plantilla
     opciones = [
         pregunta_actual.opcion_correcta,
         pregunta_actual.opcion_incorrecta1,
@@ -327,25 +372,20 @@ def mostrar_pregunta_ml(config_id, idx):
         pregunta_actual.opcion_incorrecta3
     ]
     random.shuffle(opciones)
-
-    # Filtrar las notas usando el ID de la pregunta base
-    existing_notes = Nota.query.filter_by(
-        usuario_id=current_user.id,
-        pregunta_id=pregunta_base.id
-    ).order_by(Nota.fecha_creacion.desc()).all()
+    print("DEBUG: Opciones a mostrar:", opciones)
 
     return render_template(
         "mostrar_pregunta_ml.html",
-        no_pregunta=no_pregunta,
-        pagina=pagina,
-        idx=idx,
-        total=len(detalle_ids),
         pregunta=pregunta_actual,
         pregunta_base=pregunta_base,
         opciones=opciones,
-        notas=existing_notes,
+        idx=idx,
+        total=len(detalles),
         config_id=config_id
     )
+
+
+
 
 
 @app.route("/show_questions")
@@ -362,43 +402,39 @@ from datetime import datetime
 @app.route("/finalizar_examen_ml/<int:config_id>")
 @login_required
 def finalizar_examen_ml(config_id):
-    exam_progress = session.get("ml_exam_progress")
-    
-    if not exam_progress or exam_progress.get("config_id") != config_id:
+    config = ConfigExamenML.query.get_or_404(config_id)
+    if not config.examen_id:
+        flash("No se encontró el examen correspondiente.", "danger")
+        return redirect(url_for("dashboard"))
+
+    examen_id = config.examen_id
+    estado = EstadoExamen.query.filter_by(
+        usuario_id=current_user.id,
+        examen_id=examen_id,
+        status="in_progress"
+    ).first()
+
+    if not estado:
         flash("No tienes un examen activo para finalizar.", "danger")
         return redirect(url_for("ver_detalle_examen_respuesta", config_id=config_id))
 
-    # ✅ Obtener el examen_id real desde ConfigExamenML
-    config = ConfigExamenML.query.get(config_id)
-    if not config or not config.examen_id:
-        flash("No se encontró el examen correspondiente en la base de datos.", "danger")
-        return redirect(url_for("dashboard"))
-
-    examen_id = config.examen_id  # Usamos el ID real del examen
-
-    # Recuperar las respuestas del usuario (guardadas en la sesión)
-    answers = exam_progress["answers"]
+    answers = estado.answers
     correctas = 0
     total = len(answers)
 
     for detalle_id_str, respuesta_usuario in answers.items():
-        detalle_id = int(detalle_id_str)
-
-        # ✅ Buscar en `detalle_examen_respuesta`, NO en `detalle_examen`
-        detalle = DetalleExamenRespuesta.query.get(detalle_id)
+        detalle = DetalleExamenRespuesta.query.get(int(detalle_id_str))
         if not detalle:
-            flash(f"No se encontró la pregunta con ID {detalle_id}.", "danger")
             continue
-
-        es_correcta = respuesta_usuario == detalle.opcion_correcta
+        es_correcta = (respuesta_usuario == detalle.opcion_correcta)
         if es_correcta:
             correctas += 1
-
-        # Guardar el registro en HistorialExamen
+        
+        # Guardar en HistorialExamen si quieres
         nuevo_historial = HistorialExamen(
             usuario_id=current_user.id,
-            examen_id=examen_id,  # Usamos el examen_id correcto
-            pregunta_id=detalle.id,  # ✅ Guardamos el ID de `detalle_examen_respuesta`
+            examen_id=examen_id,
+            pregunta_id=detalle.id,
             pregunta=detalle.pregunta_texto,
             respuesta_usuario=respuesta_usuario,
             respuesta_correcta=detalle.opcion_correcta,
@@ -407,29 +443,17 @@ def finalizar_examen_ml(config_id):
         )
         db.session.add(nuevo_historial)
 
-    # Calcular el porcentaje global
-    porcentaje = (correctas / total * 100) if total > 0 else 0
+    porcentaje = (correctas / total * 100) if total else 0
 
-    # Guardar el resumen en ResumenExamenResultados
-    nuevo_resumen = ResumenExamenResultados(
-        usuario_id=current_user.id,
-        fecha_finalizacion=datetime.now(),
-        porcentaje=porcentaje
-    )
-    db.session.add(nuevo_resumen)
-
-    # ✅ Marcar el examen como finalizado en `examenes`
+    # Marcar el examen como finalizado
     examen = Examen.query.get(examen_id)
     if examen:
         examen.fecha_realizacion = datetime.now()
         examen.resultado = porcentaje
-        db.session.commit()
 
-    # Finalizar la transacción
+    # Marcar el estado como terminado
+    estado.status = "finished"
     db.session.commit()
-
-    # Limpiar la sesión del examen
-    session.pop("ml_exam_progress", None)
 
     return render_template(
         "finalizar_examen_ml.html",
@@ -438,6 +462,7 @@ def finalizar_examen_ml(config_id):
         correctas=correctas,
         porcentaje=porcentaje
     )
+
 
 
 
@@ -930,6 +955,17 @@ def dashboard():
                            percentage=percentage,
                            total_users=total_users)
 
+
+
+@app.route("/admin")
+@login_required
+def admin():    
+    return render_template("admin.html")
+
+@app.route("/bat01")
+@login_required
+def bat01():    
+    return render_template("bat01.html")
 
 
 

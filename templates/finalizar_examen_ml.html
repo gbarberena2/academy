@@ -3,110 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <title>Examen Finalizado | Quiz IA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- Bootstrap 5 CSS -->
-  <link 
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-  />
-  
-  <!-- Google Font: Oswald -->
-  <link
-    href="https://fonts.googleapis.com/css?family=Oswald:300"
-    rel="stylesheet"
-    type="text/css"
-  />
-
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <style>
-    body {
-      font-family: 'Oswald', sans-serif;
-      background-color: #f8f9fa;
-      color: #413d3d;
-    }
-
-    /* Navbar */
-    .navbar-brand {
-      font-weight: bold;
-    }
-
-    /* Espacio para el contenido (evita que el footer lo tape) */
-    .content-wrapper {
-      padding-bottom: 80px;
-    }
-    
-    /* Estilos para las cards */
-    .card-custom {
-      transition: transform 0.2s;
-    }
-    .card-custom:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Footer fijo */
-    footer {
-      background-color: #343a40;
-      color: #fff;
-      text-align: center;
-      padding: 15px 0;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-    }
+    body { font-family: 'Oswald', sans-serif; background-color: #f8f9fa; color: #413d3d; }
+    .content-wrapper { padding-top: 30px; }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand ms-3" href="#">Quiz IA</a>
-      <button 
-        class="navbar-toggler" 
-        type="button" 
-        data-bs-toggle="collapse" 
-        data-bs-target="#navbarNav" 
-        aria-controls="navbarNav" 
-        aria-expanded="false" 
-        aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto me-3">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('dashboard') }}">Inicio</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Perfil</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-danger" href="{{ url_for('logout') }}">Cerrar Sesión</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Contenido principal -->
-  <div class="container content-wrapper mt-4">
-    <div class="card card-custom">
+  <div class="container content-wrapper">
+    <div class="card">
       <div class="card-body text-center">
-        <h1 class="mb-4">Examen Finalizado</h1>
-        <p><strong>Examen ID Config:</strong> {{ config_id }}</p>
+        <h1>Examen Finalizado</h1>
+        <p><strong>ID Configuración:</strong> {{ config_id }}</p>
         <p><strong>Preguntas Totales:</strong> {{ total }}</p>
-        <p><strong>Correctas:</strong> {{ correctas }}</p>
+        <p><strong>Respuestas Correctas:</strong> {{ correctas }}</p>
         <p><strong>Porcentaje:</strong> {{ porcentaje }}%</p>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-3">Ir al Dashboard</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Ir al Dashboard</a>
       </div>
     </div>
   </div>
-  
-  <!-- Footer fijo -->
-  <footer>
-    <p class="mb-0">© 2025 Quiz IA - Todos los derechos reservados</p>
-  </footer>
-
-  <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

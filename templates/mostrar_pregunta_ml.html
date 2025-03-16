@@ -80,30 +80,10 @@
     .btn-next:active {
       background-color: #2874a6;
     }
-    .help-panel {
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 15px;
-      background-color: #ffffff;
-      height: 100%;
-    }
-    .help-panel h5 {
-      margin-bottom: 10px;
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-    .help-panel textarea {
-      width: 100%;
-      resize: vertical;
-    }
-    .help-response {
-      margin-top: 15px;
-      border: 1px solid #eee;
-      background-color: #f8f9fa;
-      padding: 10px;
-      border-radius: 4px;
-      min-height: 60px;
-      text-align: left;
+    #debugSeleccion {
+      margin-top: 20px;
+      color: red;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -135,33 +115,21 @@
 
   <!-- Contenedor principal -->
   <div class="quiz-container">
-    <!-- Encabezado con número de pregunta y página -->
+    <!-- Encabezado: muestra número de pregunta, página, etc. -->
     <h1>
       Pregunta #{{ pregunta_base.no_pregunta }} - Página: {{ pregunta_base.pagina }}
       ({{ idx+1 }} de {{ total }})
     </h1>
     
     <div class="row">
-      <!-- Columna izquierda: Pregunta y opciones -->
+      <!-- Columna para la pregunta y opciones -->
       <div class="col-md-8 mb-4">
-        <!-- Texto de la pregunta y contenedor para "Ver Notas" -->
         <p class="question-text">
           {{ pregunta.pregunta_texto | safe }}
-          <span id="verNotasContainer">
-            {% if notas and notas|length > 0 %}
-              <button type="button" class="btn btn-sm btn-danger ms-3" data-bs-toggle="modal" data-bs-target="#verNotasModal">
-                <i class="bi bi-emoji-dizzy"></i> Ver Notas
-              </button>
-            {% else %}
-              <button type="button" class="btn btn-sm btn-secondary ms-3" disabled>
-                <i class="bi bi-emoji-dizzy"></i> Sin notas
-              </button>
-            {% endif %}
-          </span>
         </p>
 
-        <!-- Opciones -->
-        <form method="POST">
+        <!-- Formulario para enviar la respuesta -->
+        <form method="POST" onsubmit="return debugFormSubmit()">
           <div>
             {% for opcion in opciones %}
               <button type="button" class="option-btn" onclick="seleccionarOpcion(this)" data-value="{{ opcion }}">
@@ -169,17 +137,20 @@
               </button>
             {% endfor %}
           </div>
-          <input type="hidden" name="opcion" id="opcionSeleccionada" />
+          <!-- Input hidden para almacenar la opción seleccionada -->
+          <input type="hidden" name="opcion" id="opcionSeleccionada" value="" />
           <button type="submit" class="btn-next">Responder</button>
         </form>
+        
+        <!-- Div de debug para mostrar la opción seleccionada en tiempo real -->
+        <div id="debugSeleccion"></div>
       </div>
 
-      <!-- Columna derecha: Consulta Rápida y botón para Nueva Nota -->
+      <!-- Columna para "Consulta Rápida" (puedes mantenerla o quitarla según tu flujo) -->
       <div class="col-md-4">
         <div class="help-panel">
           <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Consulta Rápida</h5>
-            <!-- Botón para abrir el modal de Nueva Nota -->
             <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalNota">
               <i class="bi bi-stickies-fill"></i>
             </button>
@@ -192,100 +163,40 @@
     </div>
   </div>
 
-  <!-- Modal para crear la nota (NUEVA NOTA) -->
-  <div class="modal fade" id="modalNota" tabindex="-1" aria-labelledby="modalNotaLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">      
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalNotaLabel">Nueva Nota</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <!-- Formulario sin submit tradicional; se usará el botón para llamar a guardarNota() -->
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="contenidoNota" class="form-label">Contenido de la Nota</label>
-            <textarea class="form-control" id="contenidoNota" rows="4" placeholder="Escribe aquí tu nota..."></textarea>
-          </div>
-          <!-- Campos ocultos para enviar junto con la nota -->
-          <input type="hidden" id="pregunta_id" value="{{ pregunta_base.id }}">
-          <input type="hidden" id="no_pregunta" value="{{ pregunta_base.no_pregunta }}">
-          <input type="hidden" id="pagina" value="{{ pregunta_base.pagina }}">
-          <input type="hidden" id="config_id" value="{{ config_id }}">
-          <input type="hidden" id="idx" value="{{ idx }}">
-          <!-- Elemento para mostrar el mensaje dentro del modal -->
-          <div id="mensajeNota" class="text-success fw-bold mt-2"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <!-- Al hacer clic, se llama a la función guardarNota() -->
-          <button type="button" class="btn btn-primary" onclick="guardarNota()">Guardar Nota</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- ============================================== -->
-
-  <!-- Modal para VER todas las notas -->
-  <div class="modal fade" id="verNotasModal" tabindex="-1" aria-labelledby="verNotasModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">        
-        <div class="modal-header">
-          <h5 class="modal-title" id="verNotasModalLabel">Tus Notas</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>        
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="table table-striped table-hover">
-              <thead>
-                <tr>
-                  <th style="width: 30%;">Fecha</th>
-                  <th>Contenido</th>
-                </tr>
-              </thead>
-              <tbody id="tablaNotasBody">
-                {% if notas and notas|length > 0 %}
-                  {% for nota in notas %}
-                    <tr>
-                      <td class="text-muted" style="font-size: 0.9rem;">
-                        {{ nota.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S') }}
-                      </td>
-                      <td>{{ nota.contenido }}</td>
-                    </tr>
-                  {% endfor %}
-                {% else %}
-                  <tr>
-                    <td colspan="2" class="text-center text-muted">
-                      No hay notas registradas para esta pregunta.
-                    </td>
-                  </tr>
-                {% endif %}
-              </tbody>
-            </table>
-          </div>
-        </div>        
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================== -->
-
-  <!-- Bootstrap 5 JS Bundle -->
+  <!-- Scripts: Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
-    // Función para seleccionar una opción y guardarla en un input hidden
+    // Función que se llama al hacer clic en una opción
     function seleccionarOpcion(boton) {
+      // Quitar la clase "selected" de todos los botones
       document.querySelectorAll(".option-btn").forEach(btn => {
         btn.classList.remove("selected");
       });
+      // Agregar la clase "selected" al botón clicado
       boton.classList.add("selected");
-      document.getElementById("opcionSeleccionada").value = boton.getAttribute("data-value");
+
+      // Obtener el valor de data-value y asignarlo al input hidden
+      const valor = boton.getAttribute("data-value");
+      document.getElementById("opcionSeleccionada").value = valor;
+      
+      // Mostrar el valor en el div de debug
+      document.getElementById("debugSeleccion").textContent = "Seleccionaste: " + valor;
+      console.log("DEBUG: Seleccionaste la opción:", valor);
     }
 
-    // Función para enviar consulta a /consulta_ayuda (AJAX para la "Consulta Rápida")
+    // Función que se llama cuando se envía el formulario para depurar el submit
+    function debugFormSubmit() {
+      const respuesta = document.getElementById("opcionSeleccionada").value;
+      console.log("DEBUG: Se está enviando el formulario con valor:", respuesta);
+      if (!respuesta) {
+        alert("Por favor, selecciona una opción antes de continuar.");
+        return false;
+      }
+      return true;
+    }
+    
+    // Función para enviar consulta a /consulta_ayuda (puedes mantenerla o quitarla)
     function preguntarAyuda() {
       const consulta = document.getElementById("textoConsulta").value;
       fetch("/consulta_ayuda", {
@@ -300,93 +211,6 @@
       .catch(err => {
         console.error(err);
         document.getElementById("respuestaAyuda").innerHTML = "Error al obtener la respuesta.";
-      });
-    }
-
-    // Función para guardar la nota vía AJAX (usando resp.text())
-    function guardarNota() {
-      // Deshabilitar ambos botones del modal
-      const modalFooterButtons = document.querySelectorAll('#modalNota .modal-footer button');
-      modalFooterButtons.forEach(btn => btn.disabled = true);
-
-      const contenido = document.getElementById("contenidoNota").value;
-      const preguntaId = document.getElementById("pregunta_id").value;
-      const noPregunta = document.getElementById("no_pregunta").value;
-      const pagina = document.getElementById("pagina").value;
-      const configId = document.getElementById("config_id").value;
-      const idx = document.getElementById("idx").value;
-
-      fetch("/guardar_nota", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pregunta_id: preguntaId,
-          no_pregunta: noPregunta,
-          pagina: pagina,
-          contenido: contenido
-        })
-      })
-      .then(resp => {
-        console.log("Status:", resp.status);
-        console.log("Headers:", resp.headers);
-        return resp.text();
-      })
-      .then(text => {
-        console.log("Respuesta cruda del servidor:", text);
-
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (err) {
-          console.error("No se pudo parsear como JSON:", err);
-          alert("Error: la respuesta no es JSON. Revisa la consola.");
-          // Rehabilitar los botones en caso de error
-          modalFooterButtons.forEach(btn => btn.disabled = false);
-          return;
-        }
-
-        if (data.status === "ok") {
-          const mensajeDiv = document.getElementById("mensajeNota");
-          mensajeDiv.textContent = "Nota guardada correctamente...";
-          mensajeDiv.style.display = "block";
-          document.getElementById("contenidoNota").value = "";
-          const verNotasContainer = document.getElementById("verNotasContainer");
-          verNotasContainer.innerHTML = `
-            <button type="button" class="btn btn-sm btn-danger ms-3" data-bs-toggle="modal" data-bs-target="#verNotasModal">
-              <i class="bi bi-emoji-dizzy"></i> Ver Notas
-            </button>
-          `;
-          const tablaNotasBody = document.getElementById("tablaNotasBody");
-          if (tablaNotasBody) {
-            let fecha = new Date().toLocaleString();
-            let newRow = document.createElement("tr");
-            newRow.innerHTML = `
-              <td class="text-muted" style="font-size: 0.9rem;">${fecha}</td>
-              <td>${contenido}</td>
-            `;
-            tablaNotasBody.prepend(newRow);
-          }
-          // Esperar 2 segundos y luego cerrar el modal
-          setTimeout(() => {
-            const modalEl = document.getElementById("modalNota");
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
-            mensajeDiv.style.display = "none";
-            mensajeDiv.textContent = "";
-            // Rehabilitar los botones para futuras aperturas
-            modalFooterButtons.forEach(btn => btn.disabled = false);
-          }, 2000);
-        } else {
-          alert("Error al guardar la nota: " + (data.message || "Desconocido"));
-          // En caso de error, reactivar los botones
-          modalFooterButtons.forEach(btn => btn.disabled = false);
-        }
-      })
-      .catch(err => {
-        console.error("Error en la petición:", err);
-        alert("Ocurrió un error al guardar la nota.");
-        // Rehabilitar los botones en caso de error
-        modalFooterButtons.forEach(btn => btn.disabled = false);
       });
     }
   </script>

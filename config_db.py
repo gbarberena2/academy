@@ -9,6 +9,11 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import datetime
 
+
+from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.types import JSON
+
+
 # Cargar variables de entorno desde .env
 load_dotenv()
 
@@ -45,6 +50,20 @@ login_manager.login_message_category = "info"
 ############################################################
 #                     MODELOS                              #
 ############################################################
+
+class EstadoExamen(db.Model):
+    __tablename__ = "estado_examen"
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
+    examen_id = db.Column(db.Integer, db.ForeignKey("examenes.id"), nullable=False)
+    current_index = db.Column(db.Integer, default=0)
+    answers = db.Column(MutableDict.as_mutable(JSON), default=dict)
+    status = db.Column(db.String(20), default="in_progress")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    
 
 class Nota(db.Model):
     __tablename__ = "notas"
